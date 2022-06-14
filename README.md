@@ -2,9 +2,8 @@
 
 该项目为作者实验室无人艇的地面控制站，完全由个人从零开始开发，主要功能有主页的设备管理（mainwindow.cpp）以及具体设备页(statusviewrubbishboat3.cpp)的无人艇位置信息(amap5.html、mapWidget)、摄像头实时画面(videoPlayWidget)、无人艇巡航任务设置与下发(amap5.html、mapWidget)、无人艇船载传感器信息显示（panelWidget.cpp）等功能。
 
-![image-20220614145424035](C:\Users\47444\AppData\Roaming\Typora\typora-user-images\image-20220614145424035.png)
-
-![image-20220614145432733](C:\Users\47444\AppData\Roaming\Typora\typora-user-images\image-20220614145432733.png)
+![image-20220614145424035](https://user-images.githubusercontent.com/45648117/173523289-f0769cf3-f382-471e-9b59-3daa4000f9af.png)
+![image-20220614145432733](https://user-images.githubusercontent.com/45648117/173523318-e8828cc2-1663-4275-b4e8-933d62d2d3b1.png )
 
 ## 2. 项目技术细节
 
