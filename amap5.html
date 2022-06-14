@@ -1,0 +1,353 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css" />
+    <title>地图显示</title>
+    <style>
+        html,
+        body,
+        #container {
+          width: 100%;
+          height: 100%;
+        }
+        .input-card{
+            width: 32rem;
+            z-index: 170;
+        }
+
+        .input-card .btn{
+            margin-right: .8rem;
+        }
+
+        .input-card .btn:last-child{
+            margin-right: 0;
+        }
+    </style>
+</head>
+<body>
+<div id="container"></div>
+<div class="input-card">
+    <div class="input-item">
+        <input id="drawRec" type="button" class="btn" onclick="polyEditor.open()" value="绘制区域">
+        <input id="stopDrawRec" type="button" class="btn" onclick="polyEditor.close()" value="停止绘制">
+        <input id="drawVirtualTrail" type="button" class="btn" onclick="drawVirtualTrail()" value="轨迹规划">
+        <input id="drawRealTrail" type="button" class="btn" onclick="drawRealTrail()" value="开始执行">
+        <input id="clearPositionLine" type="button" class="btn" onclick="clearPositionLine()" value="清除轨迹">
+    </div>
+</div>
+<!-- 加载地图JSAPI脚本 -->
+<script src="https://webapi.amap.com/maps?v=1.4.15&key=64c0c29099a9ba1fb766e81b79d38bf4"></script>
+<script src="https://webapi.amap.com/maps?v=1.4.15&key=64c0c29099a9ba1fb766e81b79d38bf4&plugin=AMap.PolyEditor"></script>
+<script src="https://webapi.amap.com/ui/1.1/main.js?v=1.1.1"></script>
+<script>
+    var map = new AMap.Map('container', {
+        resizeEnable: true, //是否监控地图容器尺寸变化
+        zoom:18, //初始化地图层级
+        center: [113.395838,23.034683], //初始化地图中心点
+    });
+
+     var virtualPathArray = [[113.396428,23.034763], [113.395818,23.03479], [113.395492,23.034793], [113.395492,23.034758], [113.395818,23.034763], [113.395818,23.034724], [113.395493,23.034724], [113.395492,23.034692], [113.395817,23.034695], [113.395817,23.034662], [113.395495,23.034666], [113.395495,23.034632], [113.395815,23.034636], [113.395815,23.034611], [113.395495,23.034609], [113.395493,23.034586], [113.395813,23.034586], [113.396428,23.034763],]  // 记录绘制轨迹的坐标点
+    // var virtualPathArray = []
+
+    var realPathArray = [[113.396372,23.034722],[113.396372,23.034722],[113.396372,23.034722],[113.396372,23.034722],
+[113.396248,23.034755],[113.396248,23.034755],[113.396248,23.034755],[113.396248,23.034755],
+[113.396152,23.034751],[113.396152,23.034751],[113.396152,23.034751],[113.396152,23.034751],
+[113.396069,23.034769],[113.396069,23.034769],[113.396069,23.034769],[113.396069,23.034769],
+[113.395984,23.034784],[113.395984,23.034784],[113.395984,23.034784],[113.395984,23.034784],
+[113.395918,23.034793], [113.395918,23.034793], [113.395918,23.034793], [113.395918,23.034793],
+[113.395863,23.034813], [113.395863,23.034813], [113.395863,23.034813], [113.395863,23.034813],
+[113.395846,23.034847], [113.395846,23.034847], [113.395846,23.034847], [113.395846,23.034847],
+[113.395859,23.034887], [113.395859,23.034887], [113.395859,23.034887], [113.395859,23.034887],
+[113.39587,23.034927], [113.39587,23.034927], [113.39587,23.034927], [113.39587,23.034927],
+[113.395857,23.034979], [113.395857,23.034979], [113.395857,23.034979], [113.395857,23.034979],
+[113.395853,23.035031], [113.395853,23.035031], [113.395853,23.035031], [113.395853,23.035031],
+[113.395859,23.035063], [113.395859,23.035063], [113.395859,23.035063], [113.395859,23.035063],
+[113.39583,23.035066], [113.39583,23.035066], [113.39583,23.035066], [113.39583,23.035066],
+[113.3958,23.035056], [113.3958,23.035056], [113.3958,23.035056], [113.3958,23.035056],
+[113.395745,23.035064], [113.395745,23.035064], [113.395745,23.035064], [113.395745,23.035064],
+[113.395725,23.035051], [113.395725,23.035051], [113.395725,23.035051], [113.395725,23.035051],
+[113.395731,23.035034], [113.395731,23.035034], [113.395731,23.035034], [113.395731,23.035034],
+[113.395741,23.03502], [113.395741,23.03502], [113.395741,23.03502], [113.395741,23.03502],
+[113.395743,23.03499], [113.395743,23.03499], [113.395743,23.03499], [113.395743,23.03499],
+[113.395737,23.034951], [113.395737,23.034951], [113.395737,23.034951], [113.395737,23.034951],
+[113.395752,23.034913], [113.395752,23.034913], [113.395752,23.034913], [113.395752,23.034913],
+[113.395735,23.034868], [113.395735,23.034868], [113.395735,23.034868], [113.395735,23.034868],
+[113.395749,23.034818], [113.395749,23.034818], [113.395749,23.034818], [113.395749,23.034818],
+[113.395745,23.034769], [113.395745,23.034769], [113.395745,23.034769], [113.395745,23.034769],
+[113.395731,23.034725], [113.395731,23.034725], [113.395731,23.034725], [113.395731,23.034725],
+[113.395751,23.034697], [113.395751,23.034697], [113.395751,23.034697], [113.395751,23.034697],
+[113.395783,23.034693], [113.395783,23.034693], [113.395783,23.034693], [113.395783,23.034693],
+[113.395835,23.034693], [113.395835,23.034693], [113.395835,23.034693], [113.395835,23.034693],
+[113.395893,23.0347], [113.395893,23.0347], [113.395893,23.0347], [113.395893,23.0347],
+[113.395914,23.034695], [113.395914,23.034695], [113.395914,23.034695], [113.395914,23.034695],
+[113.395961,23.03469], [113.395961,23.03469], [113.395961,23.03469], [113.395961,23.03469],
+[113.396028,23.034678], [113.396028,23.034678], [113.396028,23.034678], [113.396028,23.034678],
+[113.396116,23.034666], [113.396116,23.034666], [113.396116,23.034666], [113.396116,23.034666],
+[113.39618,23.034656], [113.39618,23.034656], [113.39618,23.034656], [113.39618,23.034656],
+[113.396247,23.034642], [113.396247,23.034642], [113.396247,23.034642], [113.396247,23.034642],
+[113.396293,23.034635], [113.396293,23.034635], [113.396293,23.034635], [113.396293,23.034635],
+[113.396338,23.034629], [113.396338,23.034629], [113.396338,23.034629], [113.396338,23.034629],
+[113.396387,23.034621], [113.396387,23.034621], [113.396387,23.034621], [113.396387,23.034621],
+[113.396417,23.034614], [113.396417,23.034614], [113.396417,23.034614], [113.396417,23.034614]
+
+]  // 记录真实轨迹的坐标点
+    
+    var recPath = [[113.395806, 23.034797], [113.395484, 23.034801], [113.395495, 23.034579],[113.395817, 23.034589]]
+
+    map.setFitView()
+
+    var polygon = new AMap.Polygon({
+        path: recPath,
+        strokeColor: "#FF33FF", 
+        strokeWeight: 6,
+        strokeOpacity: 0.2,
+        fillOpacity: 0.4,
+        fillColor: '#1791fc',
+        zIndex: 50,
+    })
+
+    map.add(polygon)
+
+    var polyEditor = new AMap.PolyEditor(map, polygon)
+
+    function drawVirtualTrail() {
+        // map.setDefaultCursor('crosshair');
+        // map.on('click',function(e){
+        //     virtualPathArray.push([e.lnglat.getLng(),e.lnglat.getLat()])
+        //     addMarker(e.lnglat.getLng(), e.lnglat.getLat())
+        //     if (virtualPathArray.length >= 2) {
+        //         startPoint = virtualPathArray[virtualPathArray.length-2]
+        //         endPoint = virtualPathArray[virtualPathArray.length-1]
+        //         console.log(startPoint)
+        //         drawPositionLine(startPoint[0],startPoint[1],endPoint[0],endPoint[1], 'virtual')
+        //     }
+            
+        //     console.log(virtualPathArray)
+            
+        // });
+
+        var i = 0
+        while ( i < virtualPathArray.length-1) {
+            startPoint = virtualPathArray[i]
+            endPoint = virtualPathArray[i+1]
+            drawPositionLine(startPoint[0], startPoint[1], endPoint[0], endPoint[1], 'virtual')
+            i = i + 1
+        }
+    }
+
+    function setPolyPath(pathIn, mode) {  // 第一个参数：坐标数据，第二个参数：自己画的轨迹还是真实轨迹，返回一个polyline对象，供map.add([m_polyline])使用
+        var polyline
+        if (mode=='virtual') {
+            polyline = new AMap.Polyline({
+            path: pathIn,            // 设置线覆盖物路径
+            showDir:true,
+            strokeColor: '#3366bb',   // 线颜色
+            strokeWeight: 4          // 线宽
+            });
+        } else if (mode=='real') {
+            polyline = new AMap.Polyline({
+            path: pathIn,            // 设置线覆盖物路径
+            showDir:true,
+            strokeColor: '#cc0000',   // 线颜色
+            strokeWeight: 3          // 线宽
+            });
+        }
+        return polyline;
+    }
+
+
+    function drawRealTrail() { //js点击按钮通知qt开始执行画线函数
+        // new QWebChannel(qt.webChannelTransport, function (channel) { 
+		// var qtui = channel.objects.qtui;
+		// qtui.recieveJsMessage("你点我干啥!");
+        
+        // })
+        start = 0
+        end = 1
+        startPoint = realPathArray[start]
+        endPoint = realPathArray[end]
+        setInterval(function() {
+            if(end < realPathArray.length) {
+                startPoint = realPathArray[start]
+                endPoint = realPathArray[end]
+                start = end
+                end = end + 1
+                drawPositionLine(startPoint[0],startPoint[1],endPoint[0],endPoint[1], 'real')
+            }
+        }, 1000)
+    }
+
+    function drawPositionLine(x1, y1, x2, y2, mode) {  //接收来自qt的数据
+        var path = [[x1,y1],[x2,y2]];
+        var m_polyline = setPolyPath(path, mode)
+        map.add([m_polyline])
+    }
+
+    function clearPositionLine() {
+        virtualPathArray.splice(0,virtualPathArray.length)
+        map.clearMap();
+    }
+
+    function addMarker(lng, lat) {
+        // console.log(lng, lat)
+        icon = new AMap.Icon({
+            imageSize:new AMap.Size(14,18),
+            image: 'https://a.amap.com/jsapi_demos/static/demo-center/icons/poi-marker-default.png'
+            // imageOffset: new AMap.Pixel(0, -60)
+        })
+        marker = new AMap.Marker({
+            icon: icon,
+            position: [lng, lat],
+            offset: new AMap.Pixel(-7, -18),
+        })
+        map.add(marker)
+    }
+
+     // function getFirstPoint() {
+    //     point =[113.395838,23.034683]; //默认初始化第一个点数据
+    //     return 
+    // }
+
+    
+
+    // polyEditor.on('addnode', function(event) {
+    //     log.info('触发事件：addnode')
+    // })
+
+    // polyEditor.on('adjust', function(event) {
+    //     log.info('触发事件：adjust')
+    // })
+
+    // polyEditor.on('removenode', function(event) {
+    //     log.info('触发事件：removenode')
+    // })
+
+    // polyEditor.on('end', function(event) {
+    //     log.info('触发事件： end')
+    //     // event.target 即为编辑后的多边形对象
+    // })
+
+    // document.getElementById("#drawRec").onclick = function() {
+    //     var buttonStartBool = true
+    //     if (buttonStartBool) {
+    //         polyEditor.open()
+    //         document.getElementById("#drawRec").value = '结束绘制'
+    //         buttonStartBool = false
+    //     } else {
+    //         document.getElementById("#drawRec").value = '绘制区域'
+    //         polyEditor.close()
+    //     }
+    // }
+
+
+    AMapUI.load(['ui/misc/PathSimplifier', 'lib/$'], function(PathSimplifier, $) {
+
+    if (!PathSimplifier.supportCanvas) {
+        alert('当前环境不支持 Canvas！');
+        return;
+    }
+
+    var pathSimplifierIns = new PathSimplifier({
+        zIndex: 300,
+        autoSetFitView: false,
+        map: map, //所属的地图实例
+
+        getPath: function(pathData, pathIndex) {
+
+            return pathData.path;
+        },
+        getHoverTitle: function(pathData, pathIndex, pointIndex) {
+
+            if (pointIndex >= 0) {
+                //point 
+                return pathData.name + '，点：' + pointIndex + '/' + pathData.path.length;
+            }
+
+            return pathData.name + '，点数量' + pathData.path.length;
+        },
+        renderOptions: {
+
+            renderAllPointsIfNumberBelow: 100 //绘制路线节点，如不需要可设置为-1
+        }
+    });
+
+    window.pathSimplifierIns = pathSimplifierIns;
+
+    var myPath = [[113.396428,23.034763], [113.395818,23.03479], [113.395492,23.034793], [113.395492,23.034758], [113.395818,23.034763], [113.395818,23.034724], [113.395493,23.034724], [113.395492,23.034692], [113.395817,23.034695], [113.395817,23.034662], [113.395495,23.034666], [113.395495,23.034632], [113.395815,23.034636], [113.395815,23.034611], [113.395495,23.034609], [113.395493,23.034586], [113.395813,23.034586], [113.396428,23.034763],
+                ],
+        endIdx = 0,
+        data = [{
+            name: '动态路线',
+            path: myPath.slice(0, 1)
+        }];
+
+    pathSimplifierIns.setData(data);
+
+    //对第一条线路（即索引 0）创建一个巡航器
+    var navg1 = pathSimplifierIns.createPathNavigator(0, {
+        loop: true, //循环播放
+        speed: 4 //巡航速度，单位千米/小时
+    });
+
+    function expandPath() {
+
+        function doExpand() {
+
+            endIdx++;
+
+            if (endIdx >= myPath.length) {
+                return false;
+            }
+
+            var cursor = navg1.getCursor().clone(), //保存巡航器的位置
+                status = navg1.getNaviStatus();
+
+
+            data[0].path = myPath.slice(0, endIdx + 1);
+            pathSimplifierIns.setData(data); //延展路径
+
+
+            //重新建立一个巡航器
+            navg1 = pathSimplifierIns.createPathNavigator(0, {
+                //loop: true, //循环播放
+                speed: 1 //巡航速度，单位千米/小时
+            });
+
+            if (status !== 'stop') {
+                navg1.start();
+            }
+
+            //恢复巡航器的位置
+            if (cursor.idx >= 0) {
+                navg1.moveToPoint(cursor.idx, cursor.tail);
+            }
+
+            return true;
+        }
+
+        /*if (doExpand()) {
+            setTimeout(expandPath, 3000);
+        }*/
+
+        if (doExpand()) {
+            // setTimeout(expandPath, 100);
+            setInterval(() => {
+                // console.log(navg1.getNaviStatus())
+                if(navg1.getNaviStatus() == 'pause') 
+                    expandPath()
+            }, 300);
+        }
+
+    }
+
+
+    navg1.start();
+
+    // expandPath()
+    setTimeout(expandPath, 5000)
+    });
+
+</script>

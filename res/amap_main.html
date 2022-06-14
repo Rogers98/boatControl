@@ -1,0 +1,97 @@
+﻿<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css" />
+
+    <title>地图显示</title>
+    <style>
+        html,
+        body,
+        #container {
+          width: 100%;
+          height: 100%;
+        }
+    </style>
+
+</head>
+<body>
+<div id="container"></div>
+<!-- 加载地图JSAPI脚本 -->
+<script type="text/javascript" src="https://webapi.amap.com/maps?v=2.0&key=d2f622fcdaa1f0169c1aa5df2898c4e5"></script>
+<script type="text/javascript" src="https://webapi.amap.com/maps?v=2.0&key=d2f622fcdaa1f0169c1aa5df2898c4e5&plugin=AMap.DistrictSearch"></script>
+<script type="text/javascript" src="./qwebchannel.js"></script>
+<script>
+    var map = new AMap.Map('container', {
+        viewMode: '2D', // 默认使用 2D 模式，如果希望使用带有俯仰角的 3D 模式，请设置 viewMode: '3D',
+        zoom:6.5, //初始化地图层级
+        center: [113.396696,23.035091], //初始化地图中心点
+        mapStyle: 'amap://styles/c8cfc7fd9274861fb813f912892cab94', //地图的自定义样式
+    });
+
+
+    // 添加省份多边形遮罩
+    new AMap.DistrictSearch({
+        extensions:'all',
+        subdistrict:0
+    }).search('广东省',function(status,result){
+        // 外多边形坐标数组和内多边形坐标数组
+        var outer = [
+            new AMap.LngLat(-360,90,true),
+            new AMap.LngLat(-360,-90,true),
+            new AMap.LngLat(360,-90,true),
+            new AMap.LngLat(360,90,true),
+        ];
+        var holes = result.districtList[0].boundaries
+
+        var pathArray = [
+            outer
+        ];
+        pathArray.push.apply(pathArray,holes)
+        var polygon = new AMap.Polygon( {
+            pathL:pathArray,
+            strokeColor: '#00eeff',
+            strokeWeight: 2,
+            fillColor: '#000000',
+            fillOpacity: 0.5
+        });
+        polygon.setPath(pathArray);
+        map.add(polygon);
+        // map.setFitView(polygon);
+    })
+
+
+    // 创建 AMap.Icon 实例：
+    var icon = new AMap.Icon({
+        size: new AMap.Size(40, 50),    // 图标尺寸
+        image: 'qrc:/res/uavMarker2.png',  // Icon的图像
+        //imageOffset: new AMap.Pixel(0, -60),  // 图像相对展示区域的偏移量，适于雪碧图等
+        imageSize: new AMap.Size(40, 50)   // 根据所设置的大小拉伸或压缩图片
+    });
+    // 将 Icon 实例添加到 marker 上:
+    var marker = new AMap.Marker({
+        position: new AMap.LngLat(113.396696,23.035091),
+        offset: new AMap.Pixel(-10, -10),
+        icon: icon, // 添加 Icon 实例
+        title: '海雀一号',
+        zoom: 6.5,
+    });
+    marker.on('click',function(){
+        new QWebChannel(qt.webChannelTransport, function (channel) {
+            var qtui = channel.objects.qtui;
+            qtui.recieveJsMessage("你点我干啥!");
+            })
+    })
+    map.add(marker);
+
+    // 添加js与widget交互
+
+
+
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/">
+        <file>res/uav.png</file>
+        <file>res/background.png</file>
+        <file>res/amap_main.html</file>
+        <file>res/qwebchannel.js</file>
+        <file>res/uavMarker2.png</file>
+        <file>res/指针.png</file>
+        <file>res/箭头.png</file>
+        <file>res/timg-removebg-preview.png</file>
+        <file>res/bottomBackground.png</file>
+    </qresource>
+</RCC>
